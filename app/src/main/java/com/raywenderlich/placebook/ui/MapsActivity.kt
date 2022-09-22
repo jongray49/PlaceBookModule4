@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.R
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -22,7 +21,7 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPhotoRequest
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
-import com.raywenderlich.placebook.BuildConfig
+import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.adapter.BookmarkInfoWindowAdapter
 import com.raywenderlich.placebook.viewmodel.MapsViewModel
 import kotlinx.coroutines.GlobalScope
@@ -43,6 +42,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -60,7 +60,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupPlacesClient() {
-        Places.initialize(applicationContext, AIzaSyCh1e241KScz8D0HWS0F34yrjXFzGxiDg)
+        Places.initialize(applicationContext, "AIzaSyCh1e241KScz8D0HWS0F34yrjXFzGxiDg")
         placesClient = Places.createClient(this)
     }
 
@@ -186,12 +186,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             })
     }
-}
 
     private fun displayAllBookmarks(bookmarks: List<MapsViewModel.BookmarkMarkerView>) {
         bookmarks.forEach { addPlaceMarker(it) }
     }
-}
 
     private fun addPlaceMarker(bookmark: MapsViewModel.BookmarkMarkerView): Marker? {
         val marker = map.addMarker(
@@ -209,12 +207,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun getCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) !=
+            PackageManager.PERMISSION_GRANTED) {
             requestLocationPermissions()
         } else {
             map.isMyLocationEnabled = true
@@ -223,15 +218,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val location = it.result
                 if (location != null) {
                     val latLng = LatLng(location.latitude, location.longitude)
-                    map.addMarker(
-                        MarkerOptions().position(latLng)
-                            .title("You are here!")
-                    )
-
                     val update = CameraUpdateFactory.newLatLngZoom(latLng, 16.0f)
                     map.moveCamera(update)
                 } else {
-                    Log.e(ContentValues.TAG, "No location found")
+                    Log.e(TAG, "No location found")
                 }
             }
         }
