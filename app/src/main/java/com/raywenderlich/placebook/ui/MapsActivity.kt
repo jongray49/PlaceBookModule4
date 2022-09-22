@@ -60,7 +60,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupPlacesClient() {
-        Places.initialize(applicationContext, "AIzaSyCh1e241KScz8D0HWS0F34yrjXFzGxiDg")
+        Places.initialize(applicationContext, getString(R.string.google_maps_key))
         placesClient = Places.createClient(this)
     }
 
@@ -81,15 +81,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun displayPoiGetPlaceStep(pointOfInterest: PointOfInterest) {
         val placeId = pointOfInterest.placeId
 
-        val placeFields = listOf(
-            Place.Field.ID,
+        val placeFields = listOf(Place.Field.ID,
             Place.Field.NAME,
             Place.Field.PHONE_NUMBER,
             Place.Field.PHOTO_METADATAS,
             Place.Field.ADDRESS,
-            Place.Field.LAT_LNG
-        )
-        val request = FetchPlaceRequest.builder(placeId, placeFields)
+            Place.Field.LAT_LNG)
+
+        val request = FetchPlaceRequest
+            .builder(placeId, placeFields)
             .build()
 
         placesClient.fetchPlace(request)
@@ -99,12 +99,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }.addOnFailureListener { exception ->
                 if (exception is ApiException) {
                     val statusCode = exception.statusCode
-                    Log.e(
-                        TAG,
+                    Log.e(TAG,
                         "Place not found: " +
                                 exception.message + ", " +
-                                "statusCode: " + statusCode
-                    )
+                                "statusCode: " + statusCode)
                 }
             }
     }
@@ -120,36 +118,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .setMaxWidth(resources.getDimensionPixelSize(R.dimen.default_image_width))
             .setMaxHeight(resources.getDimensionPixelSize(R.dimen.default_image_height))
             .build()
-        val addOnFailureListener = placesClient.fetchPhoto(photoRequest)
-            .addOnSuccessListener { fetchPhotoResponse ->
-                val bitmap = fetchPhotoResponse.bitmap
-                displayPoiDisplayStep(place, bitmap)
-            }.addOnFailureListener { exception ->
-                if (exception is ApiException) {
-                    val statusCode = exception.statusCode
-                    Log.e(
-                        TAG,
-                        "Place not found: " + exception.message + ", " +
-                                "statusCode: " + statusCode
-                    )
-                }
+        placesClient.fetchPhoto(photoRequest).addOnSuccessListener { fetchPhotoResponse ->
+            val bitmap = fetchPhotoResponse.bitmap
+            displayPoiDisplayStep(place, bitmap)
+        }.addOnFailureListener { exception ->
+            if (exception is ApiException) {
+                val statusCode = exception.statusCode
+                Log.e(TAG, "Place not found: " + exception.message + ", statusCode: " + statusCode)
             }
+        }
     }
 
 
     private fun displayPoiDisplayStep(place: Place, photo: Bitmap?) {
-        val marker = map.addMarker(
-            MarkerOptions()
-                .position(place.latLng as LatLng)
-                .title(place.name)
-                .snippet(place.phoneNumber)
+        val marker = map.addMarker(MarkerOptions()
+            .position(place.latLng as LatLng)
+            .title(place.name)
+            .snippet(place.phoneNumber)
         )
         marker?.tag = PlaceInfo(place, photo)
     }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permission: Array<String>,
+        permissions: Array<String>,
         grantResults: IntArray
     ) {
         if (requestCode == REQUEST_LOCATION) {
@@ -192,19 +184,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun addPlaceMarker(bookmark: MapsViewModel.BookmarkMarkerView): Marker? {
-        val marker = map.addMarker(
-            MarkerOptions()
-                .position(bookmark.location)
-                .icon(
-                    BitmapDescriptorFactory.defaultMarker(
-                        BitmapDescriptorFactory.HUE_AZURE
-                    )
-                )
-                .alpha(0.8f)
-        )
+        val marker = map.addMarker(MarkerOptions()
+            .position(bookmark.location)
+            .icon(BitmapDescriptorFactory.defaultMarker(
+                BitmapDescriptorFactory.HUE_AZURE))
+            .alpha(0.8f))
         marker.tag = bookmark
         return marker
     }
+
+
 
     private fun getCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(this,
@@ -228,15 +217,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun requestLocationPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
+        ActivityCompat.requestPermissions(this,
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            REQUEST_LOCATION
-        )
+            REQUEST_LOCATION)
     }
 
-    class PlaceInfo(
-        val place: Place? = null,
-        val image: Bitmap? = null
-    )
+    class PlaceInfo(val place: Place? = null, val image: Bitmap? = null)
 }
