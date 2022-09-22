@@ -58,5 +58,4 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
         var id: Long? = null,
         var location: LatLng = LatLng(0.0, 0.0)
     )
-    )
 }

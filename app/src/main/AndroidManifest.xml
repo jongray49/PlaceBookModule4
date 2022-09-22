@@ -31,7 +31,7 @@
             android:value="AIzaSyCh1e241KScz8D0HWS0F34yr-jXFzGxiDg" />
 
         <activity
-            android:name=".placebook.ui.MapsActivity"
+            android:name=".MapsActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
