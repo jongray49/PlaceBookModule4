@@ -186,10 +186,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             })
     }
+}
 
     private fun displayAllBookmarks(bookmarks: List<MapsViewModel.BookmarkMarkerView>) {
         bookmarks.forEach { addPlaceMarker(it) }
     }
+}
 
     private fun addPlaceMarker(bookmark: MapsViewModel.BookmarkMarkerView): Marker? {
         val marker = map.addMarker(
@@ -229,7 +231,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val update = CameraUpdateFactory.newLatLngZoom(latLng, 16.0f)
                     map.moveCamera(update)
                 } else {
-                    Log.e(TAG, "No location found")
+                    Log.e(ContentValues.TAG, "No location found")
                 }
             }
         }
