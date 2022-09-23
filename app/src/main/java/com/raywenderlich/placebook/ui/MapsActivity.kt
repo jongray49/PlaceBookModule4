@@ -60,7 +60,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupPlacesClient() {
-        Places.initialize(applicationContext, getString(R.string.google_maps_key))
+        Places.initialize(applicationContext, "AIzaSyCh1e241KScz8D0HWS0F34yr-jXFzGxiDg")
         placesClient = Places.createClient(this)
     }
 
@@ -189,7 +189,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .icon(BitmapDescriptorFactory.defaultMarker(
                 BitmapDescriptorFactory.HUE_AZURE))
             .alpha(0.8f))
-        marker.tag = bookmark
+        marker?.tag = bookmark
         return marker
     }
 
