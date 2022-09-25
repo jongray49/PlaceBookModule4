@@ -8,7 +8,7 @@ import com.raywenderlich.placebook.databinding.ContentBookmarkInfoBinding
 import com.raywenderlich.placebook.ui.MapsActivity
 import com.raywenderlich.placebook.viewmodel.MapsViewModel
 
-class BookmarkInfoWindowAdapter(context: Activity) : GoogleMap.InfoWindowAdapter {
+class BookmarkInfoWindowAdapter(val context: Activity) : GoogleMap.InfoWindowAdapter {
 
     private val binding = ContentBookmarkInfoBinding.inflate(context.layoutInflater)
 
@@ -31,6 +31,7 @@ class BookmarkInfoWindowAdapter(context: Activity) : GoogleMap.InfoWindowAdapter
                 val bookMarkview = marker.tag as
                         MapsViewModel.BookmarkMarkerView
                 // set Imageview Bitmap here
+                imageView.setImageBitmap(bookMarkview.getImage(context))
             }
         }
 
