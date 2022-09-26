@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="bookmarkDetailsView"
+            type="com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel.BookmarkDetailsView" />
+    </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -103,9 +108,10 @@
                     style="@style/BookmarkEditText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
                     android:hint="@string/name"
+                    android:text="@{bookmarkDetailsView.name}"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginStart="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/barrier1"
                     app:layout_constraintTop_toBottomOf="@+id/imageViewPlace" />
@@ -115,8 +121,9 @@
                     style="@style/BookmarkEditText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
                     android:hint="@string/enter_notes"
+                    android:text="@{bookmarkDetailsView.notes}"
+                    android:layout_marginStart="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/barrier1"
                     app:layout_constraintTop_toBottomOf="@+id/editTextName" />
@@ -126,8 +133,9 @@
                     style="@style/BookmarkEditText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
                     android:hint="@string/phone_number"
+                    android:text="@{bookmarkDetailsView.phone}"
+                    android:layout_marginStart="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/barrier1"
                     app:layout_constraintTop_toBottomOf="@+id/editTextNotes" />
@@ -137,9 +145,10 @@
                     style="@style/BookmarkEditText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
                     android:hint="@string/address"
                     android:inputType="textMultiLine"
+                    android:text="@{bookmarkDetailsView.address}"
+                    android:layout_marginStart="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/barrier1"
                     app:layout_constraintTop_toBottomOf="@+id/editTextPhone" />
