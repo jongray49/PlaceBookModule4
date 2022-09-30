@@ -40,12 +40,9 @@ class BookmarkRepo(context: Context) {
         bookmarkDao.deleteBookmark(bookmark)
     }
 
-    fun getLiveBookmark(bookmarkId: Long): LiveData<Bookmark> =
-        bookmarkDao.loadLiveBookmark(bookmarkId)
-
-    val allBookmarks: LiveData<List<Bookmark>>
-    get() {
-        return bookmarkDao.loadAll()
+    fun getLiveBookmark(bookmarkId: Long): LiveData<Bookmark> {
+        val bookmark = bookmarkDao.loadLiveBookmark(bookmarkId)
+        return bookmark
     }
 
     fun placeTypeToCategory(placeType: Place.Type): String {
@@ -56,13 +53,16 @@ class BookmarkRepo(context: Context) {
         return category
     }
 
-
+    val allBookmarks: LiveData<List<Bookmark>>
+        get() {
+            return bookmarkDao.loadAll()
+        }
 
     fun getCategoryResourceId(placeCategory: String): Int? {
         return allCategories[placeCategory]
     }
 
-    private fun buildCategories() : HashMap<String, Int> {
+    private fun buildCategories(): HashMap<String, Int> {
         return hashMapOf(
             "Gas" to R.drawable.ic_gas,
             "Lodging" to R.drawable.ic_lodging,
@@ -72,7 +72,7 @@ class BookmarkRepo(context: Context) {
         )
     }
 
-    private fun buildCategoryMap() : HashMap<Place.Type, String> {
+    private fun buildCategoryMap(): HashMap<Place.Type, String> {
         return hashMapOf(
             Place.Type.BAKERY to "Restaurant",
             Place.Type.BAR to "Restaurant",
