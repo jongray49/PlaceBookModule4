@@ -378,7 +378,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun showProgress() {
-        databinding.mainMapView.progressBar.visibility = ProgressBar.VISIBLEdisableUserInteraction()
+        databinding.mainMapView.progressBar.visibility = ProgressBar.VISIBLE
+        disableUserInteraction()
     }
 
     private fun hideProgress() {

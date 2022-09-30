@@ -128,8 +128,7 @@ class BookmarkDetailsActivity : AppCompatActivity(),
         val bookmarkView = bookmarkDetailsView ?: return
         val resourceId =
             bookmarkDetailsViewModel.getCategoryResourceId(bookmarkView.category)
-        resourceId?.let
-        { databinding.imageViewCategory.setImageResource(it) }
+        resourceId?.let { databinding.imageViewCategory.setImageResource(it) }
         val categories = bookmarkDetailsViewModel.getCategories()
         val adapter = ArrayAdapter(
             this,

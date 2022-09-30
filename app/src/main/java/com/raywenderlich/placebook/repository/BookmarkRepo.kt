@@ -7,9 +7,6 @@ import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.db.BookmarkDao
 import com.raywenderlich.placebook.db.PlaceBookDatabase
 import com.raywenderlich.placebook.model.Bookmark
-import com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class BookmarkRepo(context: Context) {
     private val db = PlaceBookDatabase.getInstance(context)
@@ -38,15 +35,9 @@ class BookmarkRepo(context: Context) {
         return Bookmark()
     }
 
-    fun deleteBookmark(bookmarkDetailsView: BookmarkDetailsView) {
-        GlobalScope.launch {
-            val bookmark = bookmarkDetailsView.id?.let {
-                bookmarkRepo.getBookmark(it)
-            }
-            bookmark?.let {
-                bookmarkRepo.deleteBookmark(it)
-            }
-        }
+    fun deleteBookmark(bookmark: Bookmark) {
+        bookmark.deleteImage(context)
+        bookmarkDao.deleteBookmark(bookmark)
     }
 
     fun getLiveBookmark(bookmarkId: Long): LiveData<Bookmark> =
