@@ -8,8 +8,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.databinding.DataBindingUtil
 import com.raywenderlich.placebook.R
@@ -18,9 +22,11 @@ import com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel
 import androidx.lifecycle.Observer
 import com.raywenderlich.placebook.util.ImageUtils
 import java.io.File
+import java.net.URLEncoder
 import kotlin.contracts.Returns
 
-class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.PhotoOptionDialogListener {
+class BookmarkDetailsActivity : AppCompatActivity(),
+    PhotoOptionDialogFragment.PhotoOptionDialogListener {
     private lateinit var databinding: ActivityBookmarkDetailsBinding
     private val bookmarkDetailsViewModel by viewModels<BookmarkDetailsViewModel>()
     private var bookmarkDetailsView: BookmarkDetailsViewModel.BookmarkDetailsView? = null
@@ -34,16 +40,25 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
             return
         }
         photoFile?.let { photoFile ->
-            val photoUri = FileProvider.getUriForFile(this,
-            "com.raywenderlich.placebook.fileprovider",
-            photoFile)
+            val photoUri = FileProvider.getUriForFile(
+                this,
+                "com.raywenderlich.placebook.fileprovider",
+                photoFile
+            )
             val captureIntent =
                 Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE)
             captureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoUri)
             val intentActivities = packageManager.queryIntentActivities(
-                captureIntent, PackageManager.MATCH_DEFAULT_ONLY)
+                captureIntent, PackageManager.MATCH_DEFAULT_ONLY
+            )
             intentActivities.map { it.activityInfo.packageName }
-                .forEach { grantUriPermission(it, photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION) }
+                .forEach {
+                    grantUriPermission(
+                        it,
+                        photoUri,
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                }
             startActivityForResult(captureIntent, REQUEST_CAPTURE_IMAGE)
         }
     }
@@ -55,10 +70,13 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
-        databinding = DataBindingUtil.setContentView(this,
-        R.layout.activity_bookmark_details)
+        databinding = DataBindingUtil.setContentView(
+            this,
+            R.layout.activity_bookmark_details
+        )
         setupToolbar()
         getIntentData()
+        setupFab()
     }
 
     override fun onCreateOptionsMenu(menu: android.view.Menu):
@@ -68,11 +86,15 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-            R.id.action_save -> {
-                saveChanges()
-                true
-            }
-        else -> super.onOptionsItemSelected(item)
+        R.id.action_save -> {
+            saveChanges()
+            return true
+        }
+        R.id.action_delete -> {
+            deleteBookmark()
+            return true
+        }
+        else -> return super.onOptionsItemSelected(item)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -83,14 +105,14 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
                     val photoFile = photoFile ?: return
                     val uri = FileProvider.getUriForFile(
                         this,
-                        "com.raywenderlich.placebook.fileprovider", photoFile)
+                        "com.raywenderlich.placebook.fileprovider", photoFile
+                    )
                     revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                     val image = getImageWithPath(photoFile.absolutePath)
                     val bitmap = ImageUtils.rotateImageIfRequired(this, image, uri)
                     updateImage(bitmap)
                 }
-                REQUEST_GALLERY_IMAGE -> if (data != null && data.data != null)
-                {
+                REQUEST_GALLERY_IMAGE -> if (data != null && data.data != null) {
                     val imageUri = data.data as Uri
                     val image = getImageWithAuthority(imageUri)
                     image?.let {
@@ -99,6 +121,48 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
                     }
                 }
             }
+        }
+    }
+
+    private fun populateCategoryList() {
+        val bookmarkView = bookmarkDetailsView ?: return
+        val resourceId =
+            bookmarkDetailsViewModel.getCategoryResourceId(bookmarkView.category)
+        resourceId?.let
+        { databinding.imageViewCategory.setImageResource(it) }
+        val categories = bookmarkDetailsViewModel.getCategories()
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item, categories
+        )
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        databinding.spinnerCategory.adapter = adapter
+
+        val placeCategory = bookmarkView.category
+
+        databinding.spinnerCategory.setSelection(adapter.getPosition(placeCategory))
+
+        databinding.spinnerCategory.post {
+            databinding.spinnerCategory.onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>,
+                        view: View,
+                        position: Int,
+                        id: Long
+                    ) {
+                        val category = parent.getItemAtPosition(position) as String
+                        val resourceId = bookmarkDetailsViewModel.getCategoryResourceId(category)
+                        resourceId?.let {
+                            databinding.imageViewCategory.setImageResource(it)
+                        }
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                    }
+                }
         }
     }
 
@@ -137,25 +201,44 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
             bookmarkView.notes = databinding.editTextNotes.text.toString()
             bookmarkView.address = databinding.editTextAddress.text.toString()
             bookmarkView.phone = databinding.editTextPhone.text.toString()
+            bookmarkView.category = databinding.spinnerCategory.selectedItem as String
             bookmarkDetailsViewModel.updateBookmark(bookmarkView)
         }
         finish()
     }
 
+    private fun deleteBookmark() {
+        val bookmarkView = bookmarkDetailsView ?: return
+        AlertDialog.Builder(this)
+            .setMessage("Delete?")
+            .setPositiveButton("Ok") { _, _ ->
+                bookmarkDetailsViewModel.deleteBookmark(bookmarkView)
+                finish()
+            }
+            .setNegativeButton("Cancel", null)
+            .create().show()
+    }
+
     private fun getIntentData() {
         val bookmarkId = intent.getLongExtra(
-            MapsActivity.Companion.EXTRA_BOOKMARK_ID, 0)
+            MapsActivity.Companion.EXTRA_BOOKMARK_ID, 0
+        )
         bookmarkDetailsViewModel.getBookmark(bookmarkId)?.observe(this, {
             it?.let {
                 bookmarkDetailsView = it
                 databinding.bookmarkDetailsView = it
                 populateImageView()
+                populateCategoryList()
             }
         })
     }
 
     private fun setupToolbar() {
         setSupportActionBar(databinding.toolbar)
+    }
+
+    private fun setupFab() {
+        databinding.fab.setOnClickListener { sharePlace() }
     }
 
     private fun populateImageView() {
@@ -168,6 +251,32 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
         databinding.imageViewPlace.setOnClickListener {
             replaceImage()
         }
+    }
+
+    private fun sharePlace() {
+        val bookmarkView = bookmarkDetailsView ?: return
+        var mapUrl = ""
+        if (bookmarkView.placeId == null) {
+            val location = URLEncoder.encode(
+                "${bookmarkView.latitude},"
+                        + "${bookmarkView.longitude}", "utf-8"
+            )
+            mapUrl = "https://www.google.com/maps/dir/?api=1" +
+                    "&destination=$location"
+        } else {
+            val name = URLEncoder.encode(bookmarkView.name, "utf-8")
+            mapUrl = "https://www.google.com/maps/dir/?api=1" +
+            "&destination=$name&destination_place_id=" +
+            "${bookmarkView.placeId}"
+        }
+        val sendIntent = Intent()
+        sendIntent.action = Intent.ACTION_SEND
+        sendIntent.putExtra(Intent.EXTRA_TEXT,
+        "Check out ${bookmarkView.name} at:\n$mapUrl")
+        sendIntent.putExtra(Intent.EXTRA_SUBJECT,
+        "Sharing ${bookmarkView.name}")
+        sendIntent.type = "text/plain"
+        startActivity(sendIntent)
     }
 
     companion object {
